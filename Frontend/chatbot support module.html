@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Support - MyBusStand</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bot-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .bot-details h2 {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #27ae60;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .close-btn {
+            background: #f8f9fa;
+            border: 2px solid #e1e1e1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .close-btn:hover {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: white;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-bubble {
+            padding: 1rem;
+            border-radius: 15px;
+            margin-bottom: 0.5rem;
+        }
+
+        .message.bot .message-bubble {
+            background: #f8f9fa;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: right;
+        }
+
+        .message.user .message-time {
+            text-align: left;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-bottom-left-radius: 5px;
+            max-width: 80px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #666;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .quick-actions {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .quick-actions h3 {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: #f8f9fa;
+            border: 1px solid #e1e1e1;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .chat-input {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 1.5rem;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .welcome-message h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .faq-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .faq-item {
+            margin-bottom: 1rem;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: calc(100vh - 20px);
+                margin: 0 10px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+
+            .quick-actions h3 {
+                text-align: center;
+            }
+        }
+
+        /* ── Cookie Banner ── */
+        #cookieBanner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 99999;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 12, 40, 0.96);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(102, 126, 234, .35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            transform: translateY(100%);
+            transition: transform .45s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, .4)
+        }
+
+        #cookieBanner.show {
+            transform: translateY(0)
+        }
+
+        #cookieBanner.hide {
+            transform: translateY(110%);
+            transition: transform .35s ease-in
+        }
+
+        .ck-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0
+        }
+
+        .ck-text {
+            flex: 1;
+            min-width: 240px;
+            color: #d0d0e8;
+            font-size: .88rem;
+            line-height: 1.6;
+            margin: 0
+        }
+
+        .ck-text a {
+            color: #a78bfa;
+            text-decoration: underline;
+            cursor: pointer
+        }
+
+        .ck-actions {
+            display: flex;
+            gap: .75rem;
+            flex-shrink: 0;
+            align-items: center
+        }
+
+        .ck-accept {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: .6rem 1.5rem;
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: opacity .2s
+        }
+
+        .ck-accept:hover {
+            opacity: .88
+        }
+
+        .ck-decline {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 25px;
+            padding: .6rem 1.2rem;
+            font-size: .85rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .ck-decline:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, .5)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="chat-info">
+                <div class="bot-avatar">&#x1F916;</div>
+                <div class="bot-details">
+                    <h2>MyBusStand Assistant</h2>
+                    <div class="bot-status">
+                        <div class="status-dot"></div>
+                        <span>Always here to help</span>
+                    </div>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeChat()">&#x00D7;</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <div class="bot-avatar" style="margin: 0 auto 1rem;">&#x1F916;</div>
+                <h3>Welcome to MyBusStand Support!</h3>
+                <p>I'm here to help you with bus routes, timings, fares, and more. Ask me anything!</p>
+            </div>
+
+            <div class="faq-section">
+                <h3 style="margin-bottom: 1rem; color: #333;">Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="askQuestion('How do I book a bus ticket?')">
+                        <span>How do I book a bus ticket?</span>
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Simply search for your route, select a bus, and click on the booking option. You can pay online
+                        or choose cash on arrival.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="askQuestion('What are the payment options?')">
+                        <span>What are the payment options?</span>
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        We accept credit/debit cards, UPI, net banking, and digital wallets. You can also pay cash at
+                        the bus stand.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="askQuestion('How can I track my bus?')">
+                        <span>How can I track my bus?</span>
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        After booking, click on the "Track Bus" button to see real-time location and estimated arrival
+                        time.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h3>Quick Help</h3>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="sendQuickMessage('Bus routes')">&#x1F68C; Bus Routes</button>
+                <button class="action-btn" onclick="sendQuickMessage('Ticket prices')">&#x1F4B0; Ticket Prices</button>
+                <button class="action-btn" onclick="sendQuickMessage('Bus timings')">&#x23F0; Bus Timings</button>
+                <button class="action-btn" onclick="sendQuickMessage('Live tracking')">&#x1F4CD; Live Tracking</button>
+                <button class="action-btn" onclick="sendQuickMessage('Refund policy')">&#x1F504; Refund Policy</button>
+                <button class="action-btn" onclick="sendQuickMessage('Contact support')">&#x1F4DE; Contact
+                    Support</button>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="input-container">
+                <input type="text" class="message-input" id="messageInput" placeholder="Type your message..."
+                    onkeypress="handleKeyPress(event)">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#x27A4;</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+
+        // Maintains the full conversation history for multi-turn GPT context
+        let conversationHistory = [];
+
+        // ── Core send logic ──────────────────────────────────────────────────
+        async function callChatbotAPI(userMessage) {
+            const payload = {
+                message: userMessage,
+                history: conversationHistory.slice()   // send a copy
+            };
+
+            const response = await fetch(`${API_BASE}/chatbot/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+
+            // Persist turns so the next call has context
+            conversationHistory.push({ role: 'user', content: userMessage });
+            conversationHistory.push({ role: 'assistant', content: data.response });
+
+            // Keep history at most 20 turns (10 pairs) to avoid huge payloads
+            if (conversationHistory.length > 20) {
+                conversationHistory = conversationHistory.slice(-20);
+            }
+
+            return data;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addUserMessage(message);
+            input.value = '';
+            disableSend(true);
+            showTypingIndicator();
+
+            try {
+                const data = await callChatbotAPI(message);
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotMessage(data.response, data.model);
+                    disableSend(false);
+                }, 300 + Math.random() * 400);
+
+            } catch (err) {
+                console.error('Chatbot API error:', err);
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotMessage('Sorry, I\'m having trouble connecting to the server. Please make sure the backend is running and try again.');
+                    disableSend(false);
+                }, 500);
+            }
+        }
+
+        async function sendQuickMessage(topic) {
+            addUserMessage(topic);
+            disableSend(true);
+            showTypingIndicator();
+
+            try {
+                const data = await callChatbotAPI(topic);
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotMessage(data.response, data.model);
+                    disableSend(false);
+                }, 300 + Math.random() * 400);
+
+            } catch (err) {
+                console.error('Chatbot API error:', err);
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotMessage('Sorry, I\'m having trouble connecting to the server.');
+                    disableSend(false);
+                }, 500);
+            }
+        }
+
+        function askQuestion(question) { sendQuickMessage(question); }
+
+        // ── UI helpers ───────────────────────────────────────────────────────
+        function disableSend(disabled) {
+            document.getElementById('sendBtn').disabled = disabled;
+            document.getElementById('messageInput').disabled = disabled;
+        }
+
+        function addUserMessage(message) {
+            const container = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">&#x1F464;</div>
+                <div class="message-content">
+                    <div class="message-bubble">${escapeHtml(message)}</div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addBotMessage(message, model) {
+            const container = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            const modelBadge = model && model.includes('gpt')
+                ? `<span style="font-size:0.7rem;color:#9b8fd4;margin-left:6px;">&#x2728; ${model}</span>`
+                : '';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">&#x1F916;</div>
+                <div class="message-content">
+                    <div class="message-bubble">${formatMessage(message)}</div>
+                    <div class="message-time">${getCurrentTime()}${modelBadge}</div>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        /** Convert newlines and basic markdown-style lists to HTML */
+        function formatMessage(text) {
+            return escapeHtml(text)
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">&#x1F916;</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            container.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', hour12: true
+            });
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) sendMessage();
+        }
+
+        function closeChat() {
+            if (confirm('Are you sure you want to close the chat? You can return anytime for help!')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ── Initialise ───────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            // Update status badge to reflect AI upgrade
+            const statusSpan = document.querySelector('.bot-status span');
+            if (statusSpan) statusSpan.textContent = 'Powered by GPT-4o-mini';
+
+            setTimeout(() => {
+                addBotMessage(
+                    'Hello! 👋 I\'m your MyBusStand AI assistant. I can help you with bus routes, ' +
+                    'timings, fares, booking, tracking, and more. What can I help you with today?'
+                );
+            }, 800);
+        });
+
+        // Redirect to login if not authenticated
+        if (!localStorage.getItem('isLoggedIn')) {
+            window.location.href = 'user authentication module.html';
+        }
+
+        // ── Cookie Consent ────────────────────────────────────────────────────
+        (function () {
+            function needsBanner(){try{var d=JSON.parse(localStorage.getItem('mbs_ck')||'null');if(!d)return true;return(Date.now()-d.ts)>180*86400000;}catch(e){return true;}}
+            if(needsBanner()) setTimeout(() => document.getElementById('cookieBanner').classList.add('show'), 800);
+        })();
+        function acceptCookies() { localStorage.setItem('mbs_ck', JSON.stringify({choice:'accepted',ts:Date.now()})); _ckDismiss(); }
+        function declineCookies() { localStorage.setItem('mbs_ck', JSON.stringify({choice:'declined',ts:Date.now()})); _ckDismiss(); }
+        function _ckDismiss() { const b = document.getElementById('cookieBanner'); b.classList.remove('show'); b.classList.add('hide'); setTimeout(() => b.style.display = 'none', 400); }
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" role="dialog" aria-label="Cookie consent">
+        <div class="ck-icon">🍪</div>
+        <p class="ck-text">We use cookies to enhance your browsing experience, provide personalized content, and analyze
+            our traffic. By clicking <strong style="color:#fff">Accept</strong>, you consent to our use of cookies. <a
+                onclick="alert('Privacy Policy coming soon!')">Learn more</a></p>
+        <div class="ck-actions">
+            <button class="ck-decline" onclick="declineCookies()">Decline</button>
+            <button class="ck-accept" onclick="acceptCookies()">Accept 🎉</button>
+        </div>
+    </div>
+</body>
+
+</html>

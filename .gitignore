@@ -1,0 +1,31 @@
+# Virtual environments — DO NOT UPLOAD
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django
+*.sqlite3
+db.sqlite3
+*.log
+staticfiles/
+
+# Environment secrets — NEVER commit this
+.env
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

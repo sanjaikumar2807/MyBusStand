@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication - MyBusStand</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.2rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            text-align: center;
+            color: #666;
+            margin-top: 1rem;
+        }
+
+        .resend-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .resend-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .success {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .otp-display-banner {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            animation: slideDown 0.4s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .otp-display-banner .otp-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 0.3rem;
+        }
+
+        .otp-display-banner .otp-code {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .otp-display-banner .otp-note {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sent-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .sent-info strong { color: #333; }
+
+        /* ── Cookie Banner ── */
+        #cookieBanner{position:fixed;bottom:0;left:0;right:0;z-index:99999;padding:1rem 1.5rem;background:rgba(15,12,40,0.96);backdrop-filter:blur(16px);border-top:1px solid rgba(102,126,234,.35);display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;transform:translateY(100%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -8px 32px rgba(0,0,0,.4)}
+        #cookieBanner.show{transform:translateY(0)}
+        #cookieBanner.hide{transform:translateY(110%);transition:transform .35s ease-in}
+        .ck-icon{font-size:1.8rem;flex-shrink:0}
+        .ck-text{flex:1;min-width:200px;color:#d0d0e8;font-size:.88rem;line-height:1.6;margin:0}
+        .ck-text a{color:#a78bfa;text-decoration:underline;cursor:pointer}
+        .ck-actions{display:flex;gap:.75rem;flex-shrink:0;align-items:center}
+        .ck-accept{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:25px;padding:.6rem 1.5rem;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .2s}
+        .ck-accept:hover{opacity:.88}
+        .ck-decline{background:transparent;color:#aaa;border:1px solid rgba(255,255,255,.2);border-radius:25px;padding:.6rem 1.2rem;font-size:.85rem;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s}
+        .ck-decline:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+        @media(max-width:600px){#cookieBanner{flex-direction:column;align-items:flex-start}.ck-actions{width:100%;justify-content:flex-end}}
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>&#x1F68C; MyBusStand</h1>
+            <p>Secure Login System</p>
+        </div>
+
+        <!-- Mobile Number Input Form -->
+        <div id="mobileForm">
+            <div class="form-group">
+                <label for="mobileNumber">Enter Mobile Number</label>
+                <input type="tel" id="mobileNumber" placeholder="+91 98765 43210" maxlength="10">
+                <div class="error" id="mobileError"></div>
+            </div>
+            <button class="btn" onclick="sendOTP()">Send OTP</button>
+        </div>
+
+        <!-- OTP Verification Form -->
+        <div id="otpForm" class="hidden">
+            <!-- OTP Display Banner (Demo / Temporary numbers) -->
+            <div class="otp-display-banner" id="otpBanner">
+                <div class="otp-label">&#x1F4E9; Your OTP Code</div>
+                <div class="otp-code" id="otpCodeDisplay">------</div>
+                <div class="otp-note">Demo mode — Temporary number OTP</div>
+            </div>
+
+            <!-- SMS Sent Notice (Real SMS via Twilio) -->
+            <div id="smsSentNotice" class="sms-sent-banner hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 1.1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">&#x1F4F1;</div>
+                <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem;">SMS Sent to Your Phone!</div>
+                <div style="font-size: 0.85rem; opacity: 0.95;">Please check your mobile SMS inbox for the 6-digit verification code.</div>
+            </div>
+
+            <div class="sent-info" id="sentInfo">OTP sent to <strong id="sentMobile"></strong></div>
+
+            <div class="form-group">
+                <label>Enter OTP</label>
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" onkeyup="moveToNext(this, 0)">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" onkeyup="moveToNext(this, 1)">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" onkeyup="moveToNext(this, 2)">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" onkeyup="moveToNext(this, 3)">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" onkeyup="moveToNext(this, 4)">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" onkeyup="moveToNext(this, 5)">
+                </div>
+                <div class="error" id="otpError"></div>
+            </div>
+            <button class="btn" onclick="verifyOTP()">Verify OTP</button>
+            <div class="timer" id="timer">Time remaining: 60s</div>
+            <div class="resend-link">
+                <a href="#" onclick="resendOTP(); return false;">Resend OTP</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        let generatedOTP = '';
+        let timerInterval;
+        let timeRemaining = 60;
+
+        async function sendOTP() {
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            const mobileError = document.getElementById('mobileError');
+            
+            // Reset error
+            mobileError.textContent = '';
+            
+            // Validate mobile number
+            if (!mobileNumber || mobileNumber.length !== 10 || !/^[6-9]\d{9}$/.test(mobileNumber)) {
+                mobileError.textContent = 'Please enter a valid 10-digit mobile number';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/send-otp/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: mobileNumber })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Switch to OTP form
+                    document.getElementById('mobileForm').classList.add('hidden');
+                    document.getElementById('otpForm').classList.remove('hidden');
+                    document.getElementById('sentMobile').textContent = '+91 ' + mobileNumber;
+                    
+                    const otpBanner = document.getElementById('otpBanner');
+                    const smsNotice = document.getElementById('smsSentNotice');
+
+                    if (data.is_real_sms || !data.otp) {
+                        // Real Twilio SMS: OTP sent directly to user phone
+                        generatedOTP = null;
+                        if (otpBanner) otpBanner.classList.add('hidden');
+                        if (smsNotice) smsNotice.classList.remove('hidden');
+                    } else {
+                        // Demo / temporary number: display OTP on screen
+                        generatedOTP = data.otp;
+                        if (smsNotice) smsNotice.classList.add('hidden');
+                        if (otpBanner) {
+                            otpBanner.classList.remove('hidden');
+                            document.getElementById('otpCodeDisplay').textContent = generatedOTP;
+                        }
+                    }
+                    
+                    // Focus first OTP input
+                    setTimeout(() => {
+                        document.querySelectorAll('.otp-input')[0].focus();
+                    }, 300);
+                    
+                    // Start timer
+                    startTimer();
+                } else {
+                    mobileError.textContent = data.message || 'Failed to send OTP';
+                }
+            } catch (err) {
+                mobileError.textContent = 'Server error. Make sure the backend is running.';
+                console.error('Send OTP error:', err);
+            }
+        }
+
+        async function verifyOTP() {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const enteredOTP = Array.from(otpInputs).map(input => input.value).join('');
+            const otpError = document.getElementById('otpError');
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            
+            // Reset error
+            otpError.textContent = '';
+            
+            // Validate OTP
+            if (enteredOTP.length !== 6) {
+                otpError.textContent = 'Please enter all 6 digits';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify-otp/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: mobileNumber, otp: enteredOTP })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store auth token and user info
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('mobileNumber', mobileNumber);
+                    
+                    alert('Login successful! Redirecting to home page...');
+                    window.location.href = 'index.html';
+                } else {
+                    otpError.textContent = data.message || 'Invalid OTP. Please try again.';
+                    // Clear OTP inputs
+                    otpInputs.forEach(input => input.value = '');
+                    otpInputs[0].focus();
+                }
+            } catch (err) {
+                otpError.textContent = 'Server error. Make sure the backend is running.';
+                console.error('Verify OTP error:', err);
+            }
+        }
+
+        function moveToNext(current, index) {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            
+            // Only allow digits
+            current.value = current.value.replace(/\D/g, '');
+            
+            if (current.value.length === 1) {
+                if (index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            }
+        }
+
+        // Handle backspace properly
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.otp-input').forEach((input, index) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                        const otpInputs = document.querySelectorAll('.otp-input');
+                        otpInputs[index - 1].focus();
+                        otpInputs[index - 1].value = '';
+                    }
+                });
+            });
+        });
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                document.getElementById('timer').textContent = `Time remaining: ${timeRemaining}s`;
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').textContent = 'OTP expired';
+                    // Reset to mobile form
+                    document.getElementById('otpForm').classList.add('hidden');
+                    document.getElementById('mobileForm').classList.remove('hidden');
+                    timeRemaining = 60;
+                }
+            }, 1000);
+        }
+
+        async function resendOTP() {
+            clearInterval(timerInterval);
+            timeRemaining = 60;
+            
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/send-otp/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: mobileNumber })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const otpBanner = document.getElementById('otpBanner');
+                    const smsNotice = document.getElementById('smsSentNotice');
+                    if (data.is_real_sms || !data.otp) {
+                        generatedOTP = null;
+                        if (otpBanner) otpBanner.classList.add('hidden');
+                        if (smsNotice) smsNotice.classList.remove('hidden');
+                    } else {
+                        generatedOTP = data.otp;
+                        if (smsNotice) smsNotice.classList.add('hidden');
+                        if (otpBanner) {
+                            otpBanner.classList.remove('hidden');
+                            document.getElementById('otpCodeDisplay').textContent = generatedOTP;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Resend OTP error:', err);
+            }
+            
+            // Clear OTP inputs
+            document.querySelectorAll('.otp-input').forEach(input => input.value = '');
+            document.querySelectorAll('.otp-input')[0].focus();
+            
+            // Restart timer
+            startTimer();
+        }
+
+        // Auto-format mobile number input
+        document.getElementById('mobileNumber').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        // Check if user is already logged in
+        if (localStorage.getItem('isLoggedIn')) {
+            window.location.href = 'index.html';
+        }
+
+        // ── Cookie Consent ────────────────────────────────────────────────────
+        // Show banner if user hasn't given consent yet (mbs_ck key)
+        (function(){
+            function needsBanner(){
+                try{var d=JSON.parse(localStorage.getItem('mbs_ck')||'null');if(!d)return true;return(Date.now()-d.ts)>180*86400000;}catch(e){return true;}
+            }
+            if(needsBanner()){
+                setTimeout(function(){var b=document.getElementById('cookieBanner');if(b)b.classList.add('show');},700);
+            }
+        })();
+        function acceptCookies(){
+            localStorage.setItem('mbs_ck',JSON.stringify({choice:'accepted',ts:Date.now()}));
+            _ckDismiss();
+        }
+        function declineCookies(){
+            localStorage.setItem('mbs_ck',JSON.stringify({choice:'declined',ts:Date.now()}));
+            _ckDismiss();
+        }
+        function _ckDismiss(){
+            var b = document.getElementById('cookieBanner');
+            b.classList.remove('show');
+            b.classList.add('hide');
+            setTimeout(function(){ b.style.display='none'; }, 400);
+        }
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" role="dialog" aria-label="Cookie consent">
+        <div class="ck-icon">🍪</div>
+        <p class="ck-text">We use cookies to enhance your browsing experience, provide personalized content, and analyze our traffic. By clicking <strong style="color:#fff">Accept</strong>, you consent to our use of cookies. <a onclick="alert('Privacy Policy coming soon!')">Learn more</a></p>
+        <div class="ck-actions">
+            <button class="ck-decline" onclick="declineCookies()">Decline</button>
+            <button class="ck-accept" onclick="acceptCookies()">Accept 🎉</button>
+        </div>
+    </div>
+</body>
+</html>
