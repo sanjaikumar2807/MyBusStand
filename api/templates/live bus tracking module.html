@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Bus Tracking - MyBusStand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
+        .container{max-width:1400px;margin:0 auto}
+
+        .header{background:#fff;border-radius:16px;padding:1.25rem 1.75rem;margin-bottom:1.5rem;box-shadow:0 8px 32px rgba(0,0,0,.12);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+        .bus-info h1{color:#1a1a2e;font-size:1.7rem;font-weight:700;margin-bottom:.3rem}
+        .bus-details{color:#666;font-size:.95rem}
+        .bus-number{font-weight:700;color:#667eea}
+        .back-btn{background:#f4f4f8;border:2px solid #e0e0e8;border-radius:10px;padding:.65rem 1.4rem;color:#333;font-weight:600;font-size:.9rem;transition:all .25s;cursor:pointer}
+        .back-btn:hover{background:#667eea;color:#fff;border-color:#667eea}
+
+        .route-planner{background:#fff;border-radius:16px;padding:1.25rem 1.75rem;margin-bottom:1.5rem;box-shadow:0 8px 32px rgba(0,0,0,.12);display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap}
+        .route-planner label{font-size:.85rem;font-weight:600;color:#555;margin-bottom:.25rem;display:block}
+        .route-planner .field{flex:1;min-width:200px}
+        .route-planner input{width:100%;padding:.65rem 1rem;border:2px solid #e0e0e8;border-radius:10px;font-size:.95rem;font-family:'Inter',sans-serif;transition:border-color .2s;outline:none}
+        .route-planner input:focus{border-color:#667eea}
+        .route-btn{padding:.7rem 1.75rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:.95rem;cursor:pointer;transition:opacity .2s;white-space:nowrap}
+        .route-btn:hover{opacity:.88}
+
+        .tracking-container{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+
+        .map-section{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+        .map-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+        .map-header h2{color:#1a1a2e;font-size:1.2rem;font-weight:700}
+        .live-indicator{display:flex;align-items:center;gap:.5rem;color:#27ae60;font-weight:600;font-size:.9rem}
+        .live-dot{width:10px;height:10px;background:#27ae60;border-radius:50%;animation:pulse 1.5s infinite}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+        #map{height:450px;border-radius:10px;border:2px solid #e0e0e8;z-index:0}
+        .coords-badge{display:inline-block;background:#f0f0f8;border-radius:8px;padding:.35rem .75rem;font-size:.78rem;color:#667eea;font-weight:600;margin-top:.5rem;font-family:monospace}
+
+        .info-section{display:flex;flex-direction:column;gap:1.25rem}
+        .status-card,.route-progress{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+        .status-card h3,.route-progress h3{color:#1a1a2e;font-size:1rem;font-weight:700;margin-bottom:.9rem}
+        .status-item{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid #f0f0f8}
+        .status-item:last-child{border-bottom:none}
+        .status-label{color:#777;font-size:.88rem}
+        .status-value{color:#1a1a2e;font-weight:700;font-size:.95rem}
+        .eta-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 8px 32px rgba(102,126,234,.35);text-align:center}
+        .eta-time{font-size:2.8rem;font-weight:800;margin:.3rem 0;letter-spacing:-1px}
+        .eta-label{font-size:.95rem;opacity:.88}
+        .progress-bar{background:#f0f0f8;border-radius:10px;height:18px;overflow:hidden;margin-bottom:.75rem}
+        .progress-fill{background:linear-gradient(135deg,#667eea,#764ba2);height:100%;border-radius:10px;transition:width .6s ease;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:700;min-width:2.5rem}
+        .route-stops{display:flex;justify-content:space-between;align-items:flex-start;margin-top:.75rem;gap:.5rem}
+        .route-stop{text-align:center;flex:1}
+        .stop-dot{width:12px;height:12px;border-radius:50%;margin:0 auto .4rem}
+        .stop-completed{background:#27ae60}
+        .stop-current{background:#667eea;box-shadow:0 0 0 4px rgba(102,126,234,.25)}
+        .stop-upcoming{background:#ddd}
+        .stop-name{font-size:.75rem;color:#666;line-height:1.3}
+
+        .alerts-section{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+        .alerts-section h3{color:#1a1a2e;font-size:1rem;font-weight:700;margin-bottom:.9rem}
+        .alert-item{display:flex;align-items:flex-start;gap:.9rem;padding:.85rem;background:#f8f8fc;border-radius:10px;margin-bottom:.75rem;animation:slideIn .35s ease}
+        @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        .alert-item:last-child{margin-bottom:0}
+        .alert-icon{font-size:1.4rem;flex-shrink:0}
+        .alert-title{font-weight:700;color:#1a1a2e;font-size:.9rem;margin-bottom:.15rem}
+        .alert-message{color:#666;font-size:.83rem}
+        .alert-time{color:#aaa;font-size:.78rem;margin-top:.15rem}
+
+        @media(max-width:968px){.tracking-container{grid-template-columns:1fr}#map{height:320px}}
+        @media(max-width:640px){.header{flex-direction:column;text-align:center}.bus-info h1{font-size:1.4rem}.eta-time{font-size:2.2rem}}
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="bus-info">
+            <h1>🚌 Live Bus Tracking</h1>
+            <div class="bus-details">
+                <span class="bus-number" id="busNumber">Loading...</span> &bull;
+                <span id="busRoute">Loading route...</span>
+            </div>
+        </div>
+        <button class="back-btn" onclick="goBack()">&#x2190; Back to Buses</button>
+    </div>
+
+    <div class="route-planner">
+        <div class="field">
+            <label for="fromInput">📍 From</label>
+            <input id="fromInput" type="text" placeholder="e.g. Chennai Central">
+        </div>
+        <div class="field">
+            <label for="toInput">🏁 To</label>
+            <input id="toInput" type="text" placeholder="e.g. Tambaram">
+        </div>
+        <button class="route-btn" onclick="calculateRoute()">Get Route</button>
+    </div>
+
+    <div class="tracking-container">
+        <div class="map-section">
+            <div class="map-header">
+                <h2>Live Location</h2>
+                <div class="live-indicator"><div class="live-dot"></div><span>LIVE</span></div>
+            </div>
+            <div id="map"></div>
+            <div id="coordsBadge" class="coords-badge">📡 Waiting for GPS...</div>
+        </div>
+
+        <div class="info-section">
+            <div class="status-card">
+                <h3>Bus Status</h3>
+                <div class="status-item"><span class="status-label">Current Speed</span><span class="status-value" id="currentSpeed">-- km/h</span></div>
+                <div class="status-item"><span class="status-label">Next Stop</span><span class="status-value" id="nextStop">--</span></div>
+                <div class="status-item"><span class="status-label">Distance to Next</span><span class="status-value" id="distanceToNext">-- km</span></div>
+                <div class="status-item"><span class="status-label">Passengers</span><span class="status-value" id="passengerCount">--/--</span></div>
+            </div>
+            <div class="eta-card">
+                <div class="eta-label">Estimated Arrival</div>
+                <div class="eta-time" id="etaTime">-- min</div>
+                <div class="eta-label">at your destination</div>
+            </div>
+            <div class="route-progress">
+                <h3>Journey Progress</h3>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%">0%</div></div>
+                <div class="route-stops" id="routeStopsContainer">
+                    <div class="route-stop"><div class="stop-dot stop-current"></div><div class="stop-name">Loading...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alerts-section">
+        <h3>Travel Updates</h3>
+        <div id="alertsContainer">
+            <div class="alert-item">
+                <div class="alert-icon">✅</div>
+                <div>
+                    <div class="alert-title">Tracking started</div>
+                    <div class="alert-message">Live tracking is active — updates every 3 seconds</div>
+                    <div class="alert-time">Just now</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const API_BASE = 'http://127.0.0.1:8000/api';
+let map, busMarker, routePolyline;
+let trackingInterval = null;
+let busId = null;
+
+// ── Geocode a place name using Nominatim (free) ───────────────────────────────
+async function geocode(place) {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place + ', Tamil Nadu, India')}&format=json&limit=1`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    const data = await res.json();
+    if (!data.length) throw new Error('Place not found: ' + place);
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+}
+
+// ── Route via OSRM (free routing engine) ─────────────────────────────────────
+async function calculateRoute() {
+    const from = document.getElementById('fromInput').value.trim();
+    const to   = document.getElementById('toInput').value.trim();
+    if (!from || !to) { alert('Please enter both From and To.'); return; }
+
+    document.getElementById('nextStop').textContent = to;
+    addAlert('🗺️', 'Calculating route…', from + ' → ' + to);
+
+    try {
+        const [fromCoords, toCoords] = await Promise.all([geocode(from), geocode(to)]);
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords[1]},${fromCoords[0]};${toCoords[1]},${toCoords[0]}?overview=full&geometries=geojson`;
+        const res  = await fetch(osrmUrl);
+        const data = await res.json();
+
+        if (data.code !== 'Ok') throw new Error('OSRM error');
+
+        const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        if (routePolyline) map.removeLayer(routePolyline);
+        routePolyline = L.polyline(coords, { color: '#667eea', weight: 5, opacity: 0.85 }).addTo(map);
+        map.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
+
+        const dist = (data.routes[0].distance / 1000).toFixed(1);
+        const dur  = Math.round(data.routes[0].duration / 60);
+        document.getElementById('distanceToNext').textContent = dist + ' km';
+        addAlert('✅', 'Route ready', `${dist} km · ~${dur} min`);
+    } catch(e) {
+        addAlert('⚠️', 'Route error', 'Could not calculate route. Check place names.');
+    }
+}
+
+// ── Smooth marker movement ────────────────────────────────────────────────────
+function animateMarker(targetLat, targetLng) {
+    if (!busMarker) {
+        busMarker = L.marker([targetLat, targetLng], { icon: busIcon }).addTo(map);
+        return;
+    }
+    const start = busMarker.getLatLng();
+    const steps = 20;
+    let step = 0;
+    const iv = setInterval(() => {
+        step++;
+        const t = step / steps;
+        busMarker.setLatLng([start.lat + (targetLat - start.lat) * t, start.lng + (targetLng - start.lng) * t]);
+        if (step >= steps) clearInterval(iv);
+    }, 50);
+}
+
+// ── Fetch live bus location from Django backend ───────────────────────────────
+async function fetchBusLocation() {
+    const id = busId || 1;
+    try {
+        const res  = await fetch(`${API_BASE}/buses/${id}/location/`);
+        const data = await res.json();
+
+        animateMarker(data.lat, data.lng);
+        if (!routePolyline) map.setView([data.lat, data.lng], 12);
+
+        document.getElementById('coordsBadge').textContent = `📍 ${data.lat.toFixed(5)}, ${data.lng.toFixed(5)}`;
+        document.getElementById('currentSpeed').textContent = data.speed + ' km/h';
+        document.getElementById('etaTime').textContent = data.eta_min + ' min';
+        document.getElementById('passengerCount').textContent = (Math.round(20 + Math.random()*20)) + '/60';
+
+        const pf = document.getElementById('progressFill');
+        pf.style.width = data.progress + '%';
+        pf.textContent = Math.round(data.progress) + '%';
+
+        updateRouteStops(data.progress);
+        if (Math.random() > 0.85) maybeAddRandomAlert();
+
+    } catch(e) {
+        console.warn('Backend fetch failed:', e);
+    }
+}
+
+function updateRouteStops(progress) {
+    const from = document.getElementById('fromInput').value || 'Source';
+    const to   = document.getElementById('toInput').value   || 'Destination';
+    const midC = progress > 50 ? 'stop-completed' : (progress > 20 ? 'stop-current' : 'stop-upcoming');
+    const toC  = progress > 90 ? 'stop-current' : 'stop-upcoming';
+    document.getElementById('routeStopsContainer').innerHTML = `
+        <div class="route-stop"><div class="stop-dot stop-completed"></div><div class="stop-name">${from}</div></div>
+        <div class="route-stop"><div class="stop-dot ${midC}"></div><div class="stop-name">En Route</div></div>
+        <div class="route-stop"><div class="stop-dot ${toC}"></div><div class="stop-name">${to}</div></div>`;
+}
+
+function addAlert(icon, title, msg) {
+    const c = document.getElementById('alertsContainer');
+    const el = document.createElement('div');
+    el.className = 'alert-item';
+    el.innerHTML = `<div class="alert-icon">${icon}</div><div><div class="alert-title">${title}</div><div class="alert-message">${msg}</div><div class="alert-time">Just now</div></div>`;
+    c.insertBefore(el, c.firstChild);
+    while (c.children.length > 5) c.lastChild.remove();
+}
+
+const ALERTS = [
+    ['📍','Bus approaching stop','Get ready for the next stop'],
+    ['🚦','Traffic signal','Bus waiting at traffic signal'],
+    ['🌧️','Weather update','Light rain in the area'],
+    ['👥','Crowding alert','Bus is getting crowded'],
+];
+function maybeAddRandomAlert() {
+    const a = ALERTS[Math.floor(Math.random() * ALERTS.length)];
+    addAlert(a[0], a[1], a[2]);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+const busIcon = L.divIcon({
+    html: `<div style="background:#667eea;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:22px;border:3px solid white;box-shadow:0 3px 10px rgba(0,0,0,.3)">🚌</div>`,
+    iconSize: [42, 42], iconAnchor: [21, 21], className: ''
+});
+
+// Load bus info from localStorage
+const stored = localStorage.getItem('selectedBus');
+busId = localStorage.getItem('selectedBusId');
+if (stored) {
+    const bd = JSON.parse(stored);
+    document.getElementById('busNumber').textContent = bd.number || 'N/A';
+    document.getElementById('busRoute').textContent  = bd.route  || 'Unknown';
+    const parts = (bd.route || '').split(' → ');
+    if (parts.length >= 2) {
+        document.getElementById('fromInput').value = parts[0].trim();
+        document.getElementById('toInput').value   = parts[parts.length-1].trim();
+    }
+} else {
+    document.getElementById('busNumber').textContent = 'Demo Bus';
+    document.getElementById('busRoute').textContent  = 'Chennai → Tambaram';
+    document.getElementById('fromInput').value = 'Chennai Central';
+    document.getElementById('toInput').value   = 'Tambaram';
+}
+
+// Init Leaflet map (Chennai default)
+map = L.map('map').setView([13.0827, 80.2707], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18
+}).addTo(map);
+
+// Start tracking & draw route
+fetchBusLocation();
+trackingInterval = setInterval(fetchBusLocation, 3000);
+calculateRoute();
+
+function goBack() {
+    clearInterval(trackingInterval);
+    window.location.href = 'bus listing module.html';
+}
+window.addEventListener('beforeunload', () => clearInterval(trackingInterval));
+
+if (!localStorage.getItem('isLoggedIn')) window.location.href = 'user authentication module.html';
+
+        // ── Cookie Consent ─────────────────────────────────────────────────────
+        (function(){
+            function needsBanner(){try{var d=JSON.parse(localStorage.getItem('mbs_ck')||'null');if(!d)return true;return(Date.now()-d.ts)>180*86400000;}catch(e){return true;}}
+            if(needsBanner()) setTimeout(()=>document.getElementById('cookieBanner').classList.add('show'),800);
+        })();
+        function acceptCookies(){localStorage.setItem('mbs_ck',JSON.stringify({choice:'accepted',ts:Date.now()}));_ckDismiss();}
+        function declineCookies(){localStorage.setItem('mbs_ck',JSON.stringify({choice:'declined',ts:Date.now()}));_ckDismiss();}
+        function _ckDismiss(){const b=document.getElementById('cookieBanner');b.classList.remove('show');b.classList.add('hide');setTimeout(()=>b.style.display='none',400);}
+</script>
+
+<!-- Cookie Consent Banner -->
+<div id="cookieBanner" role="dialog" aria-label="Cookie consent" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;padding:1rem 1.5rem;background:rgba(15,12,40,0.96);backdrop-filter:blur(16px);border-top:1px solid rgba(102,126,234,.35);display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;transform:translateY(100%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -8px 32px rgba(0,0,0,.4)">
+    <span style="font-size:1.8rem">🍪</span>
+    <p style="flex:1;min-width:240px;color:#d0d0e8;font-size:.88rem;line-height:1.6;margin:0">We use cookies to enhance your browsing experience, provide personalized content, and analyze our traffic. By clicking <strong style="color:#fff">Accept</strong>, you consent to our use of cookies. <a style="color:#a78bfa;text-decoration:underline;cursor:pointer" onclick="alert('Privacy Policy coming soon!')">Learn more</a></p>
+    <div style="display:flex;gap:.75rem;align-items:center;flex-shrink:0">
+        <button onclick="declineCookies()" style="background:transparent;color:#aaa;border:1px solid rgba(255,255,255,.2);border-radius:25px;padding:.6rem 1.2rem;font-size:.85rem;cursor:pointer;font-family:inherit">Decline</button>
+        <button onclick="acceptCookies()" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:25px;padding:.6rem 1.5rem;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit">Accept 🎉</button>
+    </div>
+</div>
+</body>
+</html>

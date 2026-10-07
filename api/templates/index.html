@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBusStand - Your Smart Bus Travel Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-mobile {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .cta-button {
+            background: white;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Features Grid */
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features h2 {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .feature-action:hover {
+            transform: scale(1.05);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            margin: 2rem;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .quick-actions h3 {
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: #f8f9fa;
+            border: 2px solid #e1e1e1;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        /* Chatbot Widget */
+        .chatbot-widget {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .chatbot-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+
+        .chatbot-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* About Section */
+        .about-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .about-section h2 {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .about-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .about-card h3 {
+            color: #667eea;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .about-card p, .about-card li {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .about-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .about-card ul li::before {
+            content: '✅ ';
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .team-member {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+
+        .team-avatar {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-member h4 { color: #333; margin-bottom: 0.25rem; }
+        .team-member p { color: #667eea; font-size: 0.9rem; font-weight: 500; }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .contact-section h2 {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .contact-form-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .contact-form-card h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+        }
+
+        .form-success {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .form-success .success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+        .form-success h3 { color: #27ae60; margin-bottom: 0.5rem; }
+        .form-success p { color: #666; }
+
+        .contact-info-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .contact-info-card h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child { border-bottom: none; }
+
+        .info-icon {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-text h4 { color: #333; margin-bottom: 0.25rem; }
+        .info-text p { color: #666; line-height: 1.5; }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-link {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .social-link:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: translateY(-3px);
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .about-grid,
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* ── Cookie Consent Banner ── */
+        #cookieBanner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 99999;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 12, 40, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(102, 126, 234, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            transform: translateY(100%);
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+        }
+        #cookieBanner.show {
+            transform: translateY(0);
+        }
+        #cookieBanner.hide {
+            transform: translateY(110%);
+            transition: transform 0.35s ease-in;
+        }
+        .cookie-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        .cookie-text {
+            flex: 1;
+            min-width: 240px;
+        }
+        .cookie-text p {
+            color: #d0d0e8;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .cookie-text a {
+            color: #a78bfa;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .cookie-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .cookie-btn-accept {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .cookie-btn-accept:hover { opacity: 0.88; transform: translateY(-1px); }
+        .cookie-btn-decline {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .cookie-btn-decline:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+        @media (max-width: 600px) {
+            #cookieBanner { flex-direction: column; align-items: flex-start; }
+            .cookie-actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                🚌 MyBusStand
+            </div>
+            <nav class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#quick-actions" class="nav-link">Quick Actions</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </nav>
+            <div class="user-info">
+                <span class="user-mobile" id="userMobile">📱 +91*********</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Smart Bus Travel Made Simple</h1>
+        <p>Track buses in real-time, book tickets instantly, and travel smarter with MyBusStand</p>
+        <button class="cta-button" onclick="scrollToFeatures()">Explore Features</button>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features" id="features">
+        <h2>Complete Bus Travel Solution</h2>
+        <div class="features-grid">
+            <!-- Route Search Module -->
+            <a href="route search module.html" class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <h3 class="feature-title">Route Search</h3>
+                <p class="feature-description">
+                    Find the best bus routes between any locations with smart search suggestions and real-time availability
+                </p>
+                <span class="feature-action">Search Routes →</span>
+            </a>
+
+            <!-- Bus Listing Module -->
+            <a href="bus listing module.html" class="feature-card">
+                <span class="feature-icon">📋</span>
+                <h3 class="feature-title">Bus Listings</h3>
+                <p class="feature-description">
+                    View all available buses with detailed information including fares, timings, and seat availability
+                </p>
+                <span class="feature-action">View Buses →</span>
+            </a>
+
+            <!-- Live Tracking Module -->
+            <a href="live bus tracking module.html" class="feature-card">
+                <span class="feature-icon">📍</span>
+                <h3 class="feature-title">Live Tracking</h3>
+                <p class="feature-description">
+                    Track your bus in real-time with live location updates and accurate arrival time predictions
+                </p>
+                <span class="feature-action">Track Bus →</span>
+            </a>
+
+            <!-- Chatbot Support Module -->
+            <a href="chatbot support module.html" class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <h3 class="feature-title">AI Assistant</h3>
+                <p class="feature-description">
+                    Get instant help with our intelligent chatbot for all your queries about routes, timings, and more
+                </p>
+                <span class="feature-action">Chat Now →</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions" id="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="quickSearch()">
+                🔍 Quick Search
+            </button>
+            <button class="action-btn" onclick="viewBookings()">
+                📄 My Bookings
+            </button>
+            <button class="action-btn" onclick="viewFares()">
+                💰 Check Fares
+            </button>
+            <button class="action-btn" onclick="getHelp()">
+                ❓ Get Help
+            </button>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Bus Routes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Daily Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Live Tracking</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">User Satisfaction</div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <h2>About MyBusStand</h2>
+        <div class="about-grid">
+            <div class="about-card">
+                <h3>🚌 Our Mission</h3>
+                <p>MyBusStand is a smart bus travel companion designed to make public transportation accessible, reliable, and stress-free across Tamil Nadu. We connect passengers with real-time bus information, live tracking, and instant route search.</p>
+                <br>
+                <p>Founded with the goal of digitizing the bus travel experience, we serve thousands of daily commuters across routes from Chennai to Thanjavur and beyond.</p>
+            </div>
+            <div class="about-card">
+                <h3>⭐ Why Choose Us</h3>
+                <ul>
+                    <li>Real-time live bus tracking</li>
+                    <li>500+ routes across Tamil Nadu</li>
+                    <li>Instant fare & seat availability</li>
+                    <li>AI-powered chatbot assistance</li>
+                    <li>Smart route suggestions</li>
+                    <li>24/7 customer support</li>
+                </ul>
+            </div>
+        </div>
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="team-avatar">👨‍💻</div>
+                <h4>Sanjai Kumar</h4>
+                <p>Lead Developer</p>
+            </div>
+            <div class="team-member">
+                <div class="team-avatar">🎨</div>
+                <h4>Design Team</h4>
+                <p>UI/UX Design</p>
+            </div>
+            <div class="team-member">
+                <div class="team-avatar">🛠️</div>
+                <h4>Operations</h4>
+                <p>Route Management</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <h2>Contact Us</h2>
+        <div class="contact-grid">
+            <div class="contact-form-card">
+                <h3>📩 Send Us a Message</h3>
+                <form id="contactForm" onsubmit="handleContactSubmit(event)">
+                    <div class="form-group">
+                        <label for="contactName">Full Name</label>
+                        <input type="text" id="contactName" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">Email Address</label>
+                        <input type="email" id="contactEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactSubject">Subject</label>
+                        <input type="text" id="contactSubject" placeholder="How can we help?" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactMessage">Message</label>
+                        <textarea id="contactMessage" placeholder="Write your message here..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message ✉️</button>
+                </form>
+                <div class="form-success" id="formSuccess">
+                    <div class="success-icon">✅</div>
+                    <h3>Message Sent!</h3>
+                    <p>Thank you for reaching out. We'll get back to you within 24 hours.</p>
+                </div>
+            </div>
+            <div class="contact-info-card">
+                <h3>📍 Get in Touch</h3>
+                <div class="info-item">
+                    <div class="info-icon">📞</div>
+                    <div class="info-text">
+                        <h4>Phone</h4>
+                        <p>+91 98765 43210</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">📧</div>
+                    <div class="info-text">
+                        <h4>Email</h4>
+                        <p>support@mybusstand.com</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">🏢</div>
+                    <div class="info-text">
+                        <h4>Office</h4>
+                        <p>MyBusStand HQ, Chennai, Tamil Nadu, India</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">🕐</div>
+                    <div class="info-text">
+                        <h4>Working Hours</h4>
+                        <p>Mon - Sat: 8:00 AM - 9:00 PM<br>Sunday: 9:00 AM - 6:00 PM</p>
+                    </div>
+                </div>
+                <div class="social-links">
+                    <a class="social-link" title="Facebook">📘</a>
+                    <a class="social-link" title="Twitter">🐦</a>
+                    <a class="social-link" title="Instagram">📸</a>
+                    <a class="social-link" title="LinkedIn">💼</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget">
+        <button class="chatbot-btn" onclick="openChatbot()" title="Chat with Assistant">
+            💬
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#about">About Us</a>
+            <a href="#contact">Contact</a>
+            <a href="#features">Features</a>
+            <a href="chatbot support module.html">Support</a>
+        </div>
+        <p>&copy; 2024 MyBusStand. All rights reserved. Made with ❤️ for smart travelers.</p>
+    </footer>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+
+        // Check if user is logged in
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const mobileNumber = localStorage.getItem('mobileNumber');
+            
+            if (!isLoggedIn) {
+                window.location.href = 'user authentication module.html';
+                return;
+            }
+            
+            // Update user mobile display
+            if (mobileNumber) {
+                const maskedMobile = '+91' + mobileNumber.slice(0, 2) + '*****' + mobileNumber.slice(-2);
+                document.getElementById('userMobile').textContent = '\u{1F4F1} ' + maskedMobile;
+            }
+        }
+
+        // Logout function — calls backend API
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    await fetch(`${API_BASE}/auth/logout/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token ? `Token ${token}` : '',
+                        },
+                    });
+                } catch (err) {
+                    console.log('Logout API call failed (non-critical):', err);
+                }
+
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('mobileNumber');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('searchData');
+                localStorage.removeItem('selectedBus');
+                localStorage.removeItem('selectedBusId');
+                window.location.href = 'user authentication module.html';
+            }
+        }
+
+        // Contact form submission — sends to Django API
+        async function handleContactSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('contactName').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const subject = document.getElementById('contactSubject').value.trim();
+            const message = document.getElementById('contactMessage').value.trim();
+
+            if (!name || !email || !subject || !message) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/contact/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Show success message
+                    document.getElementById('contactForm').style.display = 'none';
+                    document.getElementById('formSuccess').style.display = 'block';
+                } else {
+                    alert(data.message || 'Failed to send message. Please try again.');
+                }
+            } catch (err) {
+                console.error('Contact form error:', err);
+                alert('Server error. Make sure the backend is running.');
+            }
+        }
+
+        // Smooth scroll to features
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        // Quick action functions
+        function quickSearch() {
+            window.location.href = 'route search module.html';
+        }
+
+        function viewBookings() {
+            alert('Your booking history will appear here. This feature is coming soon!');
+        }
+
+        function viewFares() {
+            alert('Fare information: AC buses \u20B965-150, Non-AC buses \u20B930-80 based on distance');
+        }
+
+        function getHelp() {
+            window.location.href = 'chatbot support module.html';
+        }
+
+        function openChatbot() {
+            window.location.href = 'chatbot support module.html';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            
+            // Add smooth scrolling to all navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Add animation to feature cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.feature-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Add hover effect to stat cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            // Press 'C' to open chatbot
+            if (e.key === 'c' && !e.target.matches('input, textarea')) {
+                openChatbot();
+            }
+            
+            // Press 'S' for quick search
+            if (e.key === 's' && !e.target.matches('input, textarea')) {
+                quickSearch();
+            }
+        });
+
+        // Add page visibility change handler
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // User returned to the page - could refresh data here
+                console.log('User returned to page');
+            }
+        });
+        // ── Cookie Consent ────────────────────────────────────────────────────
+        (function() {
+            function needsCookieBanner() {
+                try {
+                    var d = JSON.parse(localStorage.getItem('mbs_ck') || 'null');
+                    if (!d) return true;
+                    return (Date.now() - d.ts) > 180 * 86400000; // re-ask after 180 days
+                } catch(e) { return true; }
+            }
+            if (needsCookieBanner()) {
+                setTimeout(function() {
+                    var b = document.getElementById('cookieBanner');
+                    if (b) b.classList.add('show');
+                }, 800);
+            }
+        })();
+
+        function acceptCookies() {
+            localStorage.setItem('mbs_ck', JSON.stringify({choice:'accepted', ts:Date.now()}));
+            _dismissCookieBanner();
+        }
+        function declineCookies() {
+            localStorage.setItem('mbs_ck', JSON.stringify({choice:'declined', ts:Date.now()}));
+            _dismissCookieBanner();
+        }
+        function _dismissCookieBanner() {
+            const b = document.getElementById('cookieBanner');
+            b.classList.remove('show');
+            b.classList.add('hide');
+            setTimeout(() => b.style.display = 'none', 400);
+        }
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" role="dialog" aria-label="Cookie consent">
+        <div class="cookie-icon">🍪</div>
+        <div class="cookie-text">
+            <p>We use cookies to enhance your browsing experience, provide personalized content, and analyze our traffic.
+            By clicking <strong style="color:#fff">Accept</strong>, you consent to our use of cookies.
+            <a onclick="alert('Privacy Policy coming soon!')">Learn more</a></p>
+        </div>
+        <div class="cookie-actions">
+            <button class="cookie-btn-decline" id="cookieDeclineBtn" onclick="declineCookies()">Decline</button>
+            <button class="cookie-btn-accept" id="cookieAcceptBtn" onclick="acceptCookies()">Accept 🎉</button>
+        </div>
+    </div>
+</body>
+</html>

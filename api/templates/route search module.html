@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Search - MyBusStand</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .route-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem;
+            padding-left: 3rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 2.8rem;
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        .swap-btn {
+            background: #f8f9fa;
+            border: 2px solid #e1e1e1;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .swap-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .suggestions {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestions h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .chip {
+            background: #f8f9fa;
+            border: 1px solid #e1e1e1;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .recent-routes {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+        }
+
+        .recent-routes h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .route-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .route-item:hover {
+            background: #f8f9fa;
+        }
+
+        .route-item:last-child {
+            border-bottom: none;
+        }
+
+        .route-path {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .route-arrow {
+            color: #667eea;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg)
+            }
+
+            100% {
+                transform: rotate(360deg)
+            }
+        }
+
+        /* ── Cookie Banner ── */
+        #cookieBanner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 99999;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 12, 40, 0.96);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(102, 126, 234, .35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            transform: translateY(100%);
+            transition: transform .45s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, .4)
+        }
+
+        #cookieBanner.show {
+            transform: translateY(0)
+        }
+
+        #cookieBanner.hide {
+            transform: translateY(110%);
+            transition: transform .35s ease-in
+        }
+
+        .ck-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0
+        }
+
+        .ck-text {
+            flex: 1;
+            min-width: 240px;
+            color: #d0d0e8;
+            font-size: .88rem;
+            line-height: 1.6;
+            margin: 0
+        }
+
+        .ck-text a {
+            color: #a78bfa;
+            text-decoration: underline;
+            cursor: pointer
+        }
+
+        .ck-actions {
+            display: flex;
+            gap: .75rem;
+            flex-shrink: 0;
+            align-items: center
+        }
+
+        .ck-accept {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: .6rem 1.5rem;
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: opacity .2s
+        }
+
+        .ck-accept:hover {
+            opacity: .88
+        }
+
+        .ck-decline {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 25px;
+            padding: .6rem 1.2rem;
+            font-size: .85rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .ck-decline:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, .5)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>&#x1F68C; MyBusStand</h1>
+            <p>Find your perfect route</p>
+        </div>
+
+        <div class="search-card">
+            <div class="route-inputs">
+                <div class="input-group">
+                    <label for="fromLocation">From</label>
+                    <span class="input-icon">&#x1F4CD;</span>
+                    <input type="text" id="fromLocation" placeholder="Enter source location" autocomplete="off">
+                    <div class="autocomplete-dropdown" id="fromDropdown"></div>
+                </div>
+
+                <button class="swap-btn" onclick="swapLocations()" title="Swap locations">
+                    &#x21C4;
+                </button>
+
+                <div class="input-group">
+                    <label for="toLocation">To</label>
+                    <span class="input-icon">&#x1F3AF;</span>
+                    <input type="text" id="toLocation" placeholder="Enter destination" autocomplete="off">
+                    <div class="autocomplete-dropdown" id="toDropdown"></div>
+                </div>
+            </div>
+
+            <div class="error" id="searchError"></div>
+
+            <button class="search-btn" onclick="searchBuses()">
+                Search Buses
+            </button>
+        </div>
+
+        <div class="suggestions">
+            <h3>Popular Routes</h3>
+            <div class="suggestion-chips">
+                <div class="chip" onclick="setRoute('Melmaruvathur', 'Vandavasi')">Melmaruvathur &#x2192; Vandavasi
+                </div>
+                <div class="chip" onclick="setRoute('Chennai', 'Kanchipuram')">Chennai &#x2192; Kanchipuram</div>
+                <div class="chip" onclick="setRoute('Kanchipuram', 'Vellore')">Kanchipuram &#x2192; Vellore</div>
+                <div class="chip" onclick="setRoute('Vellore', 'Tiruvannamalai')">Vellore &#x2192; Tiruvannamalai</div>
+                <div class="chip" onclick="setRoute('Villupuram', 'Puducherry')">Villupuram &#x2192; Puducherry</div>
+                <div class="chip" onclick="setRoute('Kumbakonam', 'Thanjavur')">Kumbakonam &#x2192; Thanjavur</div>
+            </div>
+        </div>
+
+        <div class="recent-routes">
+            <h3>Recent Searches</h3>
+            <div id="recentRoutesList">
+                <p style="color: #666; text-align: center;">No recent searches</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        let locations = []; // Will be loaded from API
+        let recentSearches = JSON.parse(localStorage.getItem('recentSearches')) || [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function () {
+            await loadLocations();
+            updateRecentRoutes();
+            setupAutocomplete('fromLocation', 'fromDropdown');
+            setupAutocomplete('toLocation', 'toDropdown');
+        });
+
+        async function loadLocations() {
+            try {
+                const response = await fetch(`${API_BASE}/locations/`);
+                const data = await response.json();
+                locations = data.map(loc => loc.name);
+            } catch (err) {
+                console.error('Failed to load locations from API:', err);
+                // Fallback to hardcoded locations if API fails
+                locations = [
+                    'Melmaruvathur', 'Vandavasi', 'Chennai', 'Kanchipuram', 'Vellore',
+                    'Tiruvannamalai', 'Villupuram', 'Puducherry', 'Cuddalore', 'Chidambaram',
+                    'Mayiladuthurai', 'Kumbakonam', 'Thanjavur'
+                ];
+            }
+        }
+
+        function setupAutocomplete(inputId, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+
+            input.addEventListener('input', function () {
+                const value = this.value.toLowerCase();
+                if (value.length < 2) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+
+                const filtered = locations.filter(loc =>
+                    loc.toLowerCase().includes(value)
+                );
+
+                if (filtered.length > 0) {
+                    dropdown.innerHTML = filtered.map(loc =>
+                        `<div class="autocomplete-item" onclick="selectLocation('${inputId}', '${loc}')">${loc}</div>`
+                    ).join('');
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+
+        function selectLocation(inputId, location) {
+            document.getElementById(inputId).value = location;
+            document.getElementById(inputId.replace('Location', 'Dropdown')).style.display = 'none';
+        }
+
+        function swapLocations() {
+            const fromInput = document.getElementById('fromLocation');
+            const toInput = document.getElementById('toLocation');
+
+            const temp = fromInput.value;
+            fromInput.value = toInput.value;
+            toInput.value = temp;
+        }
+
+        function setRoute(from, to) {
+            document.getElementById('fromLocation').value = from;
+            document.getElementById('toLocation').value = to;
+        }
+
+        async function searchBuses() {
+            const from = document.getElementById('fromLocation').value.trim();
+            const to = document.getElementById('toLocation').value.trim();
+            const errorDiv = document.getElementById('searchError');
+
+            // Reset error
+            errorDiv.textContent = '';
+
+            // Validation
+            if (!from || !to) {
+                errorDiv.textContent = 'Please enter both source and destination';
+                return;
+            }
+
+            if (from.toLowerCase() === to.toLowerCase()) {
+                errorDiv.textContent = 'Source and destination cannot be the same';
+                return;
+            }
+
+            // Add to recent searches
+            addToRecentSearches(from, to);
+
+            // Show loading state
+            const searchBtn = document.querySelector('.search-btn');
+            searchBtn.innerHTML = '<div class="spinner"></div> Searching...';
+            searchBtn.disabled = true;
+
+            // Store search data for the bus listing page
+            localStorage.setItem('searchData', JSON.stringify({
+                from: from,
+                to: to,
+                timestamp: new Date().toISOString()
+            }));
+
+            // Small delay for UX then redirect
+            setTimeout(() => {
+                window.location.href = 'bus listing module.html';
+            }, 800);
+        }
+
+        function addToRecentSearches(from, to) {
+            const search = {
+                from: from,
+                to: to,
+                timestamp: new Date().toISOString()
+            };
+
+            // Remove if already exists
+            recentSearches = recentSearches.filter(s =>
+                !(s.from === from && s.to === to)
+            );
+
+            // Add to beginning
+            recentSearches.unshift(search);
+
+            // Keep only last 5 searches
+            recentSearches = recentSearches.slice(0, 5);
+
+            // Save to localStorage
+            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+
+            updateRecentRoutes();
+        }
+
+        function updateRecentRoutes() {
+            const container = document.getElementById('recentRoutesList');
+
+            if (recentSearches.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center;">No recent searches</p>';
+                return;
+            }
+
+            container.innerHTML = recentSearches.map(search => {
+                const timeAgo = getTimeAgo(new Date(search.timestamp));
+                return `
+                    <div class="route-item" onclick="setRoute('${search.from}', '${search.to}')">
+                        <div class="route-path">
+                            <span>${search.from}</span>
+                            <span class="route-arrow">&#x2192;</span>
+                            <span>${search.to}</span>
+                        </div>
+                        <span style="color: #666; font-size: 0.9rem;">${timeAgo}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 60) {
+                return diffMins <= 1 ? 'Just now' : `${diffMins} minutes ago`;
+            } else if (diffHours < 24) {
+                return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+            } else {
+                return diffDays === 1 ? 'Yesterday' : `${diffDays} days ago`;
+            }
+        }
+
+        // Check if user is logged in
+        if (!localStorage.getItem('isLoggedIn')) {
+            window.location.href = 'user authentication module.html';
+        }
+
+        // ── Cookie Consent ────────────────────────────────────────────────────
+        (function () {
+            function needsBanner(){try{var d=JSON.parse(localStorage.getItem('mbs_ck')||'null');if(!d)return true;return(Date.now()-d.ts)>180*86400000;}catch(e){return true;}}
+            if(needsBanner()) setTimeout(() => document.getElementById('cookieBanner').classList.add('show'), 800);
+        })();
+        function acceptCookies() { localStorage.setItem('mbs_ck', JSON.stringify({choice:'accepted',ts:Date.now()})); _ckDismiss(); }
+        function declineCookies() { localStorage.setItem('mbs_ck', JSON.stringify({choice:'declined',ts:Date.now()})); _ckDismiss(); }
+        function _ckDismiss() { const b = document.getElementById('cookieBanner'); b.classList.remove('show'); b.classList.add('hide'); setTimeout(() => b.style.display = 'none', 400); }
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" role="dialog" aria-label="Cookie consent">
+        <div class="ck-icon">🍪</div>
+        <p class="ck-text">We use cookies to enhance your browsing experience, provide personalized content, and analyze
+            our traffic. By clicking <strong style="color:#fff">Accept</strong>, you consent to our use of cookies. <a
+                onclick="alert('Privacy Policy coming soon!')">Learn more</a></p>
+        <div class="ck-actions">
+            <button class="ck-decline" onclick="declineCookies()">Decline</button>
+            <button class="ck-accept" onclick="acceptCookies()">Accept 🎉</button>
+        </div>
+    </div>
+</body>
+
+</html>

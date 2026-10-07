@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger - Live Bus Tracking</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/api/css/passenger.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Live Bus Tracking</h1>
+        <div class="search-box">
+            <input type="number" id="bus-id-input" placeholder="Enter Bus Number/ID">
+            <button id="track-btn">Track Bus</button>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/api/js/passenger.js"></script>
+</body>
+</html>

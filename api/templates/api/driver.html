@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver - Live Location Sender</title>
+    <link rel="stylesheet" href="/static/api/css/driver.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bus Driver Panel</h1>
+        <div id="status-card" class="card">
+            <p id="status-text">Initializing GPS...</p>
+            <p id="coords-text">Latitude: -- | Longitude: --</p>
+        </div>
+        <div class="input-group">
+            <label for="bus-id">Enter Bus ID:</label>
+            <input type="number" id="bus-id" placeholder="e.g. 1" value="1">
+        </div>
+        <button id="start-btn" class="btn">Start Sharing Location</button>
+        <button id="stop-btn" class="btn btn-danger" style="display:none;">Stop Sharing</button>
+    </div>
+
+    <script src="/static/api/js/driver.js"></script>
+</body>
+</html>
