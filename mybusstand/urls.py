@@ -14,7 +14,7 @@ urlpatterns = [
     # Frontend pages served via Django Templates
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
     path('index.html', TemplateView.as_view(template_name='index.html'), name='index'),
-    path('login', TemplateView.as_view(template_name='user authentication module.html'), name='login'),
+    path('login/', TemplateView.as_view(template_name='user authentication module.html'), name='login'),
     path('user authentication module.html', TemplateView.as_view(template_name='user authentication module.html'), name='auth'),
     path('route search module.html', TemplateView.as_view(template_name='route search module.html'), name='route-search'),
     path('bus listing module.html', TemplateView.as_view(template_name='bus listing module.html'), name='bus-listing'),
