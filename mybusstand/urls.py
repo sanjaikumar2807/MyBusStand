@@ -22,6 +22,6 @@ urlpatterns = [
     path('chatbot support module.html', TemplateView.as_view(template_name='chatbot support module.html'), name='chatbot'),
 
     # Direct links for driver and passenger
-    path('driver/', TemplateView.as_view(template_name='api/driver.html'), name='driver-page'),
-    path('passenger/', TemplateView.as_view(template_name='api/passenger.html'), name='passenger-page'),
+    path('driver/', TemplateView.as_view(template_name='driver.html'), name='driver-page'),
+    path('passenger/', TemplateView.as_view(template_name='passenger.html'), name='passenger-page'),
 ]
