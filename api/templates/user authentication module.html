@@ -218,11 +218,18 @@
 
         <!-- OTP Verification Form -->
         <div id="otpForm" class="hidden">
-            <!-- OTP Display Banner -->
+            <!-- OTP Display Banner (Demo / Temporary numbers) -->
             <div class="otp-display-banner" id="otpBanner">
                 <div class="otp-label">&#x1F4E9; Your OTP Code</div>
                 <div class="otp-code" id="otpCodeDisplay">------</div>
-                <div class="otp-note">Demo mode — In production, OTP is sent via SMS</div>
+                <div class="otp-note">Demo mode — Temporary number OTP</div>
+            </div>
+
+            <!-- SMS Sent Notice (Real SMS via Twilio) -->
+            <div id="smsSentNotice" class="sms-sent-banner hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 1.1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">&#x1F4F1;</div>
+                <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem;">SMS Sent to Your Phone!</div>
+                <div style="font-size: 0.85rem; opacity: 0.95;">Please check your mobile SMS inbox for the 6-digit verification code.</div>
             </div>
 
             <div class="sent-info" id="sentInfo">OTP sent to <strong id="sentMobile"></strong></div>
@@ -248,7 +255,7 @@
     </div>
 
     <script>
-        const API_BASE = 'http://127.0.0.1:8000/api';
+        const API_BASE = (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:')) ? (window.location.origin + '/api') : 'https://mybusstandlive.onrender.com/api';
         let generatedOTP = '';
         let timerInterval;
         let timeRemaining = 60;
@@ -276,15 +283,28 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    generatedOTP = data.otp; // Demo mode — OTP returned from server
-                    
                     // Switch to OTP form
                     document.getElementById('mobileForm').classList.add('hidden');
                     document.getElementById('otpForm').classList.remove('hidden');
-                    
-                    // Display OTP on screen (demo mode)
-                    document.getElementById('otpCodeDisplay').textContent = generatedOTP;
                     document.getElementById('sentMobile').textContent = '+91 ' + mobileNumber;
+                    
+                    const otpBanner = document.getElementById('otpBanner');
+                    const smsNotice = document.getElementById('smsSentNotice');
+
+                    if (data.is_real_sms || !data.otp) {
+                        // Real Twilio SMS: OTP sent directly to user phone
+                        generatedOTP = null;
+                        if (otpBanner) otpBanner.classList.add('hidden');
+                        if (smsNotice) smsNotice.classList.remove('hidden');
+                    } else {
+                        // Demo / temporary number: display OTP on screen
+                        generatedOTP = data.otp;
+                        if (smsNotice) smsNotice.classList.add('hidden');
+                        if (otpBanner) {
+                            otpBanner.classList.remove('hidden');
+                            document.getElementById('otpCodeDisplay').textContent = generatedOTP;
+                        }
+                    }
                     
                     // Focus first OTP input
                     setTimeout(() => {
@@ -404,8 +424,20 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    generatedOTP = data.otp;
-                    document.getElementById('otpCodeDisplay').textContent = generatedOTP;
+                    const otpBanner = document.getElementById('otpBanner');
+                    const smsNotice = document.getElementById('smsSentNotice');
+                    if (data.is_real_sms || !data.otp) {
+                        generatedOTP = null;
+                        if (otpBanner) otpBanner.classList.add('hidden');
+                        if (smsNotice) smsNotice.classList.remove('hidden');
+                    } else {
+                        generatedOTP = data.otp;
+                        if (smsNotice) smsNotice.classList.add('hidden');
+                        if (otpBanner) {
+                            otpBanner.classList.remove('hidden');
+                            document.getElementById('otpCodeDisplay').textContent = generatedOTP;
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Resend OTP error:', err);

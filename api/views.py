@@ -83,26 +83,29 @@ def send_otp(request):
     user, created = User.objects.get_or_create(mobile=mobile)
     otp = user.generate_otp()
 
-    # If mobile is 8015501005, send real SMS through Twilio
+    # If mobile is 8015501005, try sending real SMS through Twilio if configured
     if mobile in TWILIO_VERIFIED_NUMBERS:
-        sms_sent, msg_info = send_sms_via_twilio(mobile, otp)
-        if not sms_sent:
-            return Response({
-                'success': False,
-                'message': f'Failed to send SMS to +91 {mobile}: {msg_info}',
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', None)
+        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', None)
+        from_number = getattr(settings, 'TWILIO_PHONE_NUMBER', None)
+        if account_sid and auth_token and from_number:
+            sms_sent, msg_info = send_sms_via_twilio(mobile, otp)
+            if sms_sent:
+                return Response({
+                    'success': True,
+                    'message': 'OTP sent to your mobile number via SMS.',
+                    'is_real_sms': True,
+                    'mobile': mobile,
+                }, status=status.HTTP_200_OK)
+            else:
+                logger.warning(f"Twilio SMS delivery failed: {msg_info}. Falling back to on-screen OTP.")
+        else:
+            logger.warning("Twilio credentials not configured in settings. Falling back to on-screen OTP.")
 
-        return Response({
-            'success': True,
-            'message': 'OTP sent to your mobile number via SMS.',
-            'is_real_sms': True,
-            'mobile': mobile,
-        }, status=status.HTTP_200_OK)
-
-    # Temporary / Demo numbers: return OTP in response for testing
+    # Temporary / Demo numbers (and fallback): return OTP in response for testing
     return Response({
         'success': True,
-        'message': 'Demo mode: Temporary number OTP generated',
+        'message': 'OTP generated successfully',
         'is_real_sms': False,
         'otp': otp,
         'mobile': mobile,

@@ -147,7 +147,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:')) ? (window.location.origin + '/api') : 'https://mybusstandlive.onrender.com/api';
 let map, busMarker, routePolyline;
 let trackingInterval = null;
 let busId = null;
