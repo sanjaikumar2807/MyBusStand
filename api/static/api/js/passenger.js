@@ -6,7 +6,18 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_M
 }).addTo(map);
 
 let busMarker = null;
+let userMarker = null;
 let trackingInterval = null;
+
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const uLat = pos.coords.latitude;
+        const uLng = pos.coords.longitude;
+        userMarker = L.marker([uLat, uLng]).addTo(map)
+            .bindPopup("<b>Your Location</b>").openPopup();
+        map.setView([uLat, uLng], 14);
+    }, (err) => console.log(err), { enableHighAccuracy: true });
+}
 
 const trackBtn = document.getElementById('track-btn');
 const busIdInput = document.getElementById('bus-id-input');
