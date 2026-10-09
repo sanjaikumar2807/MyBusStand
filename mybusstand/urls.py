@@ -7,33 +7,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from django.http import HttpResponse
-from os import path
-
-def serve_frontend(request, path_url='index.html'):
-    \"\"\"Fallback function to serve frontend files regardless of case (Frontend/frontend).\"\"\"
-    from django.conf import settings
-    import os
-
-    # Try both uppercase and lowercase folder names
-    for folder in ['Frontend', 'frontend']:
-        full_path = os.path.join(settings.BASE_DIR, folder, path_url)
-        if os.path.exists(full_path):
-            try:
-                with open(full_path, 'rb') as f:
-                    return HttpResponse(f.read(), content_type='text/html')
-            except Exception:
-                continue
-
-    return HttpResponse(f'File {path_url} not found in either Frontend or frontend directory', status=404)
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
 
-    # Frontend pages
-    path('', serve_frontend, name='home'),
-    path('index.html', serve_frontend, name='index'),
+    # Frontend pages served via Django Templates
+    path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    path('index.html', TemplateView.as_view(template_name='index.html'), name='index'),
     path('login/', TemplateView.as_view(template_name='user authentication module.html'), name='login'),
     path('user authentication module.html', TemplateView.as_view(template_name='user authentication module.html'), name='auth'),
     path('route search module.html', TemplateView.as_view(template_name='route search module.html'), name='route-search'),
