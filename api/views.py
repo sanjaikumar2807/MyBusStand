@@ -428,7 +428,7 @@ CHATBOT_RESPONSES = {
     'bus timings': 'Buses typically run from 6:00 AM to 11:00 PM. Peak hours have more frequent buses - every 10-15 minutes. Off-peak frequency is every 30-45 minutes.',
     'live tracking': 'You can track any bus in real-time! After selecting your bus, click the "Track Bus" button to see live location, ETA, and journey progress.',
     'refund policy': 'Full refund is available if cancelled 2 hours before departure. 50% refund for cancellations 1 hour before. No refund for cancellations less than 1 hour before departure.',
-    'contact support': 'You can reach our support team at 📞 1800-123-4567 (24/7) or email support@mybusstand.com. We typically respond within 2 hours.',
+    'contact support': 'You can reach our support team at 📞 +91 8015501005 (24/7) or email sanjaikumar1135@gmail.com. We typically respond within 2 hours.',
     'booking': 'To book a ticket: 1) Search your route 2) Select preferred bus 3) Choose seats 4) Make payment 5) Receive confirmation SMS with ticket details.',
     'cancellation': 'Go to "My Bookings" in your profile, select the ticket to cancel, and click "Cancel". Refund will be processed according to our policy.',
     'payment': 'We accept all major credit/debit cards, UPI (PhonePe, GPay, Paytm), net banking, and digital wallets. Cash payment available at select bus stands.',
@@ -480,7 +480,7 @@ Key policies:
 - Full refund if cancelled 2+ hours before departure
 - 50% refund if cancelled 1–2 hours before departure
 - No refund within 1 hour of departure
-- Support line: 1800-123-4567 (24/7), email: support@mybusstand.com
+- Support line: +91 8015501005 (24/7), email: sanjaikumar1135@gmail.com
 
 Bus types and typical fares:
 - Non-AC Express: ₹30–80
