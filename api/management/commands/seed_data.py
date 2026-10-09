@@ -8,6 +8,7 @@ Populates:
 """
 
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User
 from api.models import Location, BusRoute, Bus
 
 
@@ -17,6 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Seeding MyBusStand database...\n')
 
+        self._seed_admin_user()
         self._seed_locations()
         self._seed_routes_and_buses()
 
@@ -24,6 +26,25 @@ class Command(BaseCommand):
         self.stdout.write(f'   Locations: {Location.objects.count()}')
         self.stdout.write(f'   Routes:    {BusRoute.objects.count()}')
         self.stdout.write(f'   Buses:     {Bus.objects.count()}')
+
+    def _seed_admin_user(self):
+        """Ensure an admin superuser exists for easy login."""
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={
+                'email': 'sanjaikumar1135@gmail.com',
+                'is_staff': True,
+                'is_superuser': True,
+            }
+        )
+        if created or not admin_user.check_password('admin123'):
+            admin_user.set_password('admin123')
+            admin_user.is_staff = True
+            admin_user.is_superuser = True
+            admin_user.save()
+            self.stdout.write(self.style.SUCCESS('  [OK] Admin superuser ready: admin / admin123'))
+        else:
+            self.stdout.write('  [SKIP] Admin superuser already exists')
 
     def _seed_locations(self):
         """Create 13 Tamil Nadu locations with approximate coordinates."""
