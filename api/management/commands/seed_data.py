@@ -28,23 +28,23 @@ class Command(BaseCommand):
         self.stdout.write(f'   Buses:     {Bus.objects.count()}')
 
     def _seed_admin_user(self):
-        """Ensure an admin superuser exists for easy login."""
-        admin_user, created = User.objects.get_or_create(
-            username='admin',
-            defaults={
-                'email': 'sanjaikumar1135@gmail.com',
-                'is_staff': True,
-                'is_superuser': True,
-            }
-        )
-        if created or not admin_user.check_password('admin123'):
-            admin_user.set_password('admin123')
-            admin_user.is_staff = True
-            admin_user.is_superuser = True
-            admin_user.save()
-            self.stdout.write(self.style.SUCCESS('  [OK] Admin superuser ready: admin / admin123'))
-        else:
-            self.stdout.write('  [SKIP] Admin superuser already exists')
+        """Ensure admin superusers exist for easy login."""
+        admin_accounts = ['sanjaikumar1135', '8015501005', 'admin']
+        for username in admin_accounts:
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    'email': 'sanjaikumar1135@gmail.com',
+                    'is_staff': True,
+                    'is_superuser': True,
+                }
+            )
+            user.set_password('s@njai2005')
+            user.is_staff = True
+            user.is_superuser = True
+            user.email = 'sanjaikumar1135@gmail.com'
+            user.save()
+            self.stdout.write(self.style.SUCCESS(f'  [OK] Admin superuser ready: {username} / s@njai2005'))
 
     def _seed_locations(self):
         """Create 13 Tamil Nadu locations with approximate coordinates."""
