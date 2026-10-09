@@ -7,6 +7,9 @@ from django.views.generic import TemplateView
 from . import views
 
 urlpatterns = [
+    # API Root
+    path('', views.api_root, name='api-root'),
+
     # Frontend Pages
     path('driver/', TemplateView.as_view(template_name='api/driver.html'), name='driver-page'),
     path('passenger/', TemplateView.as_view(template_name='api/passenger.html'), name='passenger-page'),

@@ -15,6 +15,7 @@ Endpoints:
 import random
 import math
 import time
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -35,6 +36,7 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+# Hardcoded verified number for perfect functionality as requested by the user
 TWILIO_VERIFIED_NUMBERS = {'8015501005'}
 
 
@@ -69,12 +71,13 @@ def send_sms_via_twilio(to_mobile, otp):
 # AUTH ENDPOINTS
 # ──────────────────────────────────────────────────────────────────────────────
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_otp(request):
     """Generate & store OTP for a mobile number.
-    If the mobile number is 8015501005, sends real OTP via Twilio SMS and does not expose it in the response.
-    For any other numbers, generates a demo OTP so temporary/testing numbers can continue to log in.
+    - 8015501005: sends real OTP via Twilio SMS (OTP hidden from response).
+    - All other numbers: returns demo OTP in the response for on-screen display.
     """
     serializer = SendOTPSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -83,26 +86,28 @@ def send_otp(request):
     user, created = User.objects.get_or_create(mobile=mobile)
     otp = user.generate_otp()
 
-    # If mobile is 8015501005, try sending real SMS through Twilio if configured
-    if mobile in TWILIO_VERIFIED_NUMBERS:
-        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', None)
-        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', None)
-        from_number = getattr(settings, 'TWILIO_PHONE_NUMBER', None)
-        if account_sid and auth_token and from_number:
-            sms_sent, msg_info = send_sms_via_twilio(mobile, otp)
-            if sms_sent:
-                return Response({
-                    'success': True,
-                    'message': 'OTP sent to your mobile number via SMS.',
-                    'is_real_sms': True,
-                    'mobile': mobile,
-                }, status=status.HTTP_200_OK)
-            else:
-                logger.warning(f"Twilio SMS delivery failed: {msg_info}. Falling back to on-screen OTP.")
+    # ── Real SMS for the owner's verified number ──
+    if mobile == '8015501005':
+        sms_sent, msg_info = send_sms_via_twilio(mobile, otp)
+        if sms_sent:
+            return Response({
+                'success': True,
+                'message': 'OTP sent to your mobile number via SMS.',
+                'is_real_sms': True,
+                'mobile': mobile,
+            }, status=status.HTTP_200_OK)
         else:
-            logger.warning("Twilio credentials not configured in settings. Falling back to on-screen OTP.")
+            # Twilio failed — fall back to on-screen OTP so login still works
+            logger.warning(f"Twilio SMS failed for {mobile}: {msg_info}. Falling back to demo OTP.")
+            return Response({
+                'success': True,
+                'message': 'SMS delivery failed. Use the OTP shown on screen.',
+                'is_real_sms': False,
+                'otp': otp,
+                'mobile': mobile,
+            }, status=status.HTTP_200_OK)
 
-    # Temporary / Demo numbers (and fallback): return OTP in response for testing
+    # ── Demo OTP for all other numbers ──
     return Response({
         'success': True,
         'message': 'OTP generated successfully',
@@ -112,6 +117,7 @@ def send_otp(request):
     }, status=status.HTTP_200_OK)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp(request):
@@ -651,3 +657,32 @@ def bus_location(request, bus_id=None):
             'progress': 30,
             'status': 'simulated',
         }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_root(request):
+    """Root overview endpoint for /api/."""
+    return Response({
+        'status': 'success',
+        'message': 'Welcome to MyBusStand API',
+        'frontend': {
+            'home': request.build_absolute_uri('/'),
+            'live_tracking': request.build_absolute_uri('/live bus tracking module.html'),
+            'route_search': request.build_absolute_uri('/route search module.html'),
+            'bus_listing': request.build_absolute_uri('/bus listing module.html'),
+            'login': request.build_absolute_uri('/login/'),
+            'driver': request.build_absolute_uri('/driver/'),
+            'passenger': request.build_absolute_uri('/passenger/'),
+        },
+        'endpoints': {
+            'buses': request.build_absolute_uri('/api/buses/'),
+            'locations': request.build_absolute_uri('/api/locations/'),
+            'routes_search': request.build_absolute_uri('/api/routes/search/'),
+            'auth_send_otp': request.build_absolute_uri('/api/auth/send-otp/'),
+            'auth_verify_otp': request.build_absolute_uri('/api/auth/verify-otp/'),
+            'bookings': request.build_absolute_uri('/api/bookings/'),
+            'chatbot': request.build_absolute_uri('/api/chatbot/'),
+        }
+    })
+
