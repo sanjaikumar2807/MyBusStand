@@ -58,7 +58,11 @@ ROOT_URLCONF = 'mybusstand.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'Frontend'],
+        'DIRS': [
+            BASE_DIR / 'Frontend',
+            BASE_DIR / 'api' / 'templates',
+            BASE_DIR / 'api' / 'templates' / 'api',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
