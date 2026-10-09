@@ -11,15 +11,21 @@ from django.http import HttpResponse
 from os import path
 
 def serve_frontend(request, path_url='index.html'):
-    """Fallback function to serve frontend files directly from the Frontend folder."""
-    # Ensure the path is correct relative to BASE_DIR
+    \"\"\"Fallback function to serve frontend files regardless of case (Frontend/frontend).\"\"\"
     from django.conf import settings
-    full_path = path.join(settings.BASE_DIR, 'Frontend', path_url)
-    try:
-        with open(full_path, 'rb') as f:
-            return HttpResponse(f.read(), content_type='text/html')
-    except FileNotFoundError:
-        return HttpResponse(f'File {path_url} not found in Frontend directory', status=404)
+    import os
+
+    # Try both uppercase and lowercase folder names
+    for folder in ['Frontend', 'frontend']:
+        full_path = os.path.join(settings.BASE_DIR, folder, path_url)
+        if os.path.exists(full_path):
+            try:
+                with open(full_path, 'rb') as f:
+                    return HttpResponse(f.read(), content_type='text/html')
+            except Exception:
+                continue
+
+    return HttpResponse(f'File {path_url} not found in either Frontend or frontend directory', status=404)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
