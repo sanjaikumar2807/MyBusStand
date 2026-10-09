@@ -21,6 +21,35 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/static/api/js/passenger.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const trackBtn = document.getElementById('track-btn');
+            const busIdInput = document.getElementById('bus-id-input');
+
+            if (trackBtn) {
+                trackBtn.addEventListener('click', () => {
+                    const busId = busIdInput.value.trim();
+
+                    if (!busId) {
+                        alert('Please enter a valid Bus ID (e.g., 1)');
+                        return;
+                    }
+
+                    // Save the selected bus ID to localStorage
+                    localStorage.setItem('selectedBusId', busId);
+
+                    // Store dummy bus object for the header
+                    const dummyBus = {
+                        number: 'Bus ID: ' + busId,
+                        route: 'Calculating route...'
+                    };
+                    localStorage.setItem('selectedBus', JSON.stringify(dummyBus));
+
+                    // Redirect to the Live Tracking module
+                    window.location.href = '/live bus tracking module.html';
+                });
+            }
+        });
+    </script>
 </body>
 </html>

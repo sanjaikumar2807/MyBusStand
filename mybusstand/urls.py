@@ -24,4 +24,5 @@ urlpatterns = [
     # Direct links
     path('driver/', TemplateView.as_view(template_name='driver.html'), name='driver-page'),
     path('passenger/', TemplateView.as_view(template_name='passenger.html'), name='passenger-page'),
+    path('passenger/live bus tracking module.html', TemplateView.as_view(template_name='live bus tracking module.html')),
 ]
