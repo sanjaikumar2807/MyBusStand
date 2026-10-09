@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from os import path
 
 def serve_frontend(request, path_url='index.html'):
-    \"\"\"Fallback function to serve frontend files directly from the Frontend folder.\"\"\"
+    """Fallback function to serve frontend files directly from the Frontend folder."""
     # Ensure the path is correct relative to BASE_DIR
     from django.conf import settings
     full_path = path.join(settings.BASE_DIR, 'Frontend', path_url)
